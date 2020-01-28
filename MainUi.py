@@ -6,7 +6,6 @@ from OrdersUi import OrdersUi
 from PathUi import PathUi
 
 
-
 class MainUi(QWidget):
     def __init__(self):
         super().__init__()
@@ -14,7 +13,8 @@ class MainUi(QWidget):
 
         self.resize(500, 500)
 
-        self.drive_btn = QPushButton("Управление персоналом")  # это должно как-то обобщится, а не писаться раз за разом
+        # TODO часть виджетов -- просто одна кнопка, откывающая TableShower
+        self.drive_btn = QPushButton("Управление персоналом")
         self.auto_btn = QPushButton("Управление автопарком")
         self.orders_btn = QPushButton("Управление рейсами")
         self.path_btn = QPushButton("Управлнение маршрутами")
@@ -33,5 +33,3 @@ class MainUi(QWidget):
         self.setLayout(self.bx)
 
         self.show()
-
-    # Главное окно тоже можно вынести в отдельный класс

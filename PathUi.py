@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout
 from DbWrapper import db_wrapper
 from TableShower import TableShower
 
+
 class PathUi(QWidget):
 
     def __init__(self):
@@ -10,18 +11,12 @@ class PathUi(QWidget):
 
         self.slave_widgets = []
         self.show_all_btn = QPushButton("Отобразить все маршруты")
-        self.add_new_btn = QPushButton("Добавить маршрут")
-        self.change_info_btn = QPushButton("Изменить маршрут")
         self.get_path_btn = QPushButton("Проложить маршрут")
 
         self.show_all_btn.clicked.connect(lambda: TableShower("`маршрут с названиям`", ["Номер маршрута"]).show())
-        # self.add_new_btn.clicked.connect()
-        # self.get_path_btn.clicked.connect()
 
         self.box = QVBoxLayout()
         self.box.addWidget(self.show_all_btn)
-        self.box.addWidget(self.add_new_btn)
-        self.box.addWidget(self.change_info_btn)
         self.box.addWidget(self.get_path_btn)
 
         self.setLayout(self.box)

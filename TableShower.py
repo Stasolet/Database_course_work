@@ -1,14 +1,15 @@
-from PyQt5.QtWidgets import QScrollArea, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QPushButton, QGridLayout
+from PyQt5.QtWidgets import QScrollArea, QWidget, QHBoxLayout, QVBoxLayout,\
+    QLabel, QLineEdit, QPushButton, QGridLayout, QSizePolicy
+
 
 from DbWrapper import db_wrapper
 
 
-class TableShower(QScrollArea):
-    # todo отдлеьный контейнер для содержимого, логическое разделение на заголовок, контент, подвал
+class TableShower(QWidget):
     def content_update(self) -> None:
         """Обновление данных при принятии изменений"""
-        for i in reversed(range(self.path_table_widget_layout.count())):  # Скопипасченное шайтан колдунство для очистки
-            widget_to_remove = self.path_table_widget_layout.itemAt(i).widget()
+        for i in reversed(range(self.content_layout.count())):  # Скопипасченное шайтан колдунство для очистки
+            widget_to_remove = self.content_layout.itemAt(i).widget()
             widget_to_remove.setParent(None)
             widget_to_remove.deleteLater()
         self.content()
@@ -19,16 +20,30 @@ class TableShower(QScrollArea):
         self.source = source
         self.key_fields = key_fields
         self.db = db_wrapper
-        self.path_table_widget = QWidget()
-        self.path_table_widget_layout = QGridLayout()
 
-        self.path_table_scroll_layout = QVBoxLayout()
-        self.path_table_scroll_layout.addLayout(self.path_table_widget_layout)
+        self.content_widget = QWidget()
+        self.table = QScrollArea()
+        self.table.setWidget(self.content_widget)
+        self.table.setWidgetResizable(True)
+        self.table.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
 
-        self.setLayout(self.path_table_scroll_layout)
-        self.setWidget(self.path_table_widget)
-        # Может стоит Qscroll завернуть только как нонтент, и в контейнер и кнопки
+        self.content_layout = QGridLayout()
+        self.content_widget.setLayout(self.content_layout)
+
+        self.head_layout = QVBoxLayout()
+        self.footer_layout = QVBoxLayout()
+        self.main_layout = QVBoxLayout()
+        self.main_layout.addLayout(self.head_layout)
+        self.main_layout.addWidget(self.table)
+        self.main_layout.addLayout(self.footer_layout)
+
+        self.add_record_btn = QPushButton("ДОБАВИТЬ")
+        self.footer_layout.addWidget(self.add_record_btn)
+
+        self.setLayout(self.main_layout)
         self.content()
+        self.resize(1000, 100)  # потому что я так хочу иначе слишком узко получается
+        # я не знаю почему но при таких числах всё хорошо выглядит
 
     def content(self) -> None:
         """Отображение непосредственно данных"""
@@ -39,19 +54,17 @@ class TableShower(QScrollArea):
             for j in range(width):
                 lbl = QLabel(str(data[i][j]))
 
-                self.path_table_widget_layout.addWidget(lbl, i, j)
-            if i:
-                btn = QPushButton("Изменить маршрут")
-                btn.clicked.connect(lambda state, num=i: TableInfoChanger(data[0], data[num], self).show())
-                self.path_table_widget_layout.addWidget(btn, i, width)
+                self.content_layout.addWidget(lbl, i, j)
 
-        qwe = QPushButton("ДОБАВИТЬ")
-        qwe.clicked.connect(lambda state: TableRecordAdder(data[0], self).show())
-        self.path_table_scroll_layout.addWidget(qwe)
+            if i:
+                btn = QPushButton("Изменить запись")
+                btn.clicked.connect(lambda state, num=i: TableInfoChanger(data[0], data[num], self).show())
+                self.content_layout.addWidget(btn, i, width)
+
+        self.add_record_btn.clicked.connect(lambda state: TableRecordAdder(data[0], self).show())
 
 
 class TableInfoChanger(QWidget):
-    # todo отдлеьный контейнер для содержимого, логическое разделение на заголовок, контент, подвал
     def __init__(self, header, info, parent: TableShower):
         super().__init__()
 
@@ -117,7 +130,6 @@ class TableRecordAdder(TableInfoChanger):
                 query.append(f" `{field_name}` = %s")
                 params.append(self.changed_cells[field_name])
         query = ",".join(query)
-
         if params:
             self.db.execute(f"insert into {self.source} SET {query} ", params=params)
             self.db.commit()

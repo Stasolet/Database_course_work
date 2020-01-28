@@ -10,12 +10,10 @@ class AutoUi(QWidget):
 
         self.box = QVBoxLayout()
         self.show_all_btn = QPushButton("Отобразить весь автопарк")
-        self.add_new_btn = QPushButton("Добавить авто")
 
         self.show_all_btn.clicked.connect(lambda: TableShower("`автомобиль`", ["Номер автомобиля"]).show())
 
         self.box.addWidget(self.show_all_btn)
-        self.box.addWidget(self.add_new_btn)
 
         self.setLayout(self.box)
 
