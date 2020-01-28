@@ -48,7 +48,7 @@ class TableShower(QWidget):
     def content(self) -> None:
         """Отображение непосредственно данных"""
         all_path = self.db.execute(f"SELECT * FROM {self.source}")
-        data = [all_path.column_names] + all_path.fetchall()  # возможно стоит отделить заоголовок.
+        data = [all_path.column_names] + all_path.fetchall()  # если отделить заголовок сложно верстать
         width = len(data[0])
         for i in range(len(data)):
             for j in range(width):
@@ -97,14 +97,7 @@ class TableInfoChanger(QWidget):
         """отправляет изменения обратно в базу данных
 
         собирает запрос, поочерёдно сравнивая значения в изменённых ячейках и собриает в единый запрос"""
-        query = []
-        params = []
-        # формирование полей на изменение
-        for field_name in self.changed_cells.keys():
-            if self.changed_cells[field_name] != str(self.old_data[field_name]):
-                query.append(f" `{field_name}` = %s")
-                params.append(self.changed_cells[field_name])
-        query = ",".join(query)
+        params, query = self.get_set_query()
 
         # формирование части запроса для определения изменяемого кортежа
         query += " WHERE "
@@ -116,20 +109,24 @@ class TableInfoChanger(QWidget):
             self.db.commit()
             self.p_content_up()
 
+    def get_set_query(self):
+        query = []
+        params = []
+        # формирование полей на изменение это можно в отдельную функцию завернуть
+        for field_name in self.changed_cells.keys():
+            if self.changed_cells[field_name] != str(self.old_data[field_name]):
+                query.append(f" `{field_name}` = %s")
+                params.append(self.changed_cells[field_name])
+        query = ",".join(query)
+        return params, query
+
 
 class TableRecordAdder(TableInfoChanger):
     def __init__(self, header, parent: TableShower):
         super().__init__(header=header, info=[""] * len(header), parent=parent)
 
     def push_changes(self):
-        query = []
-        params = []
-        # формирование полей на изменение
-        for field_name in self.changed_cells.keys():
-            if self.changed_cells[field_name] != str(self.old_data[field_name]):
-                query.append(f" `{field_name}` = %s")
-                params.append(self.changed_cells[field_name])
-        query = ",".join(query)
+        params, query = self.get_set_query()
         if params:
             self.db.execute(f"insert into {self.source} SET {query} ", params=params)
             self.db.commit()
