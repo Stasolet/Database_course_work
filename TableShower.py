@@ -20,6 +20,8 @@ class TableShower(QWidget):
         self.source = source
         self.key_fields = key_fields
         self.db = db_wrapper
+        self.record_editor = TableInfoChanger
+        self.record_adder = TableRecordAdder
 
         self.content_widget = QWidget()
         self.table = QScrollArea()
@@ -58,10 +60,10 @@ class TableShower(QWidget):
 
             if i:
                 btn = QPushButton("Изменить запись")
-                btn.clicked.connect(lambda state, num=i: TableInfoChanger(data[0], data[num], self).show())
+                btn.clicked.connect(lambda state, num=i: self.record_editor(data[0], data[num], self).show())
                 self.content_layout.addWidget(btn, i, width)
 
-        self.add_record_btn.clicked.connect(lambda state: TableRecordAdder(data[0], self).show())
+        self.add_record_btn.clicked.connect(lambda state: self.record_adder(data[0], self).show())
 
 
 class TableInfoChanger(QWidget):
@@ -108,6 +110,7 @@ class TableInfoChanger(QWidget):
             self.db.execute(f"UPDATE {self.source} SET {query} ", params=params)
             self.db.commit()
             self.p_content_up()
+            self.close()
 
     def get_set_query(self):
         query = []
@@ -131,6 +134,7 @@ class TableRecordAdder(TableInfoChanger):
             self.db.execute(f"insert into {self.source} SET {query} ", params=params)
             self.db.commit()
             self.p_content_up()
+            self.close()
 
 if __name__ == '__main__':
     db_wrapper.connect(host="localhost",
