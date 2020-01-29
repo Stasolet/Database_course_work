@@ -6,14 +6,6 @@ from DbWrapper import db_wrapper
 
 
 class TableShower(QWidget):
-    def content_update(self) -> None:
-        """Обновление данных при принятии изменений"""
-        for i in reversed(range(self.content_layout.count())):  # Скопипасченное шайтан колдунство для очистки
-            widget_to_remove = self.content_layout.itemAt(i).widget()
-            widget_to_remove.setParent(None)
-            widget_to_remove.deleteLater()
-        self.content()
-
     def __init__(self, source: str, key_fields: list, parent=None):
         super().__init__(parent=parent)
         self.slave_widgets = []
@@ -44,7 +36,7 @@ class TableShower(QWidget):
 
         self.setLayout(self.main_layout)
         self.content()
-        self.resize(1000, 100)  # потому что я так хочу иначе слишком узко получается
+        self.resize(1000, 100)  # потому что я так хочу иначе слишком узко получается some magic
         # я не знаю почему но при таких числах всё хорошо выглядит
 
     def content(self) -> None:
@@ -55,22 +47,33 @@ class TableShower(QWidget):
         for i in range(len(data)):
             for j in range(width):
                 lbl = QLabel(str(data[i][j]))
-
                 self.content_layout.addWidget(lbl, i, j)
 
-            if i:
+            if i:  # чтобы не было кнопки на заголовке
                 btn = QPushButton("Изменить запись")
                 btn.clicked.connect(lambda state, num=i: self.record_editor(data[0], data[num], self).show())
                 self.content_layout.addWidget(btn, i, width)
 
         self.add_record_btn.clicked.connect(lambda state: self.record_adder(data[0], self).show())
 
+    def content_update(self) -> None:
+        """Обновление данных при принятии изменений"""
+        for i in reversed(range(self.content_layout.count())):  # Скопипасченное шайтан колдунство для очистки
+            widget_to_remove = self.content_layout.itemAt(i).widget()
+            widget_to_remove.setParent(None)
+            widget_to_remove.deleteLater()
+        self.content()
+
 
 class TableInfoChanger(QWidget):
+    """Класс для изменения записей в таблице, визуализированной TableShower
+
+    исходные значения полей берёт из родительского TableShower, после изменений вызывает обновление родителя"""
+
     def __init__(self, header, info, parent: TableShower):
         super().__init__()
 
-        parent.slave_widgets.append(self)  # пока что пусть будет так виджет изменения записи сам регистрируется в родителе
+        parent.slave_widgets.append(self)
         self.source = parent.source
         self.db = parent.db
         self.key_fields = parent.key_fields
@@ -113,9 +116,9 @@ class TableInfoChanger(QWidget):
             self.close()
 
     def get_set_query(self):
+        """формирует последовательность вида: поле1 = значение1, полеN = значениеN, ... на основе изменённых полей"""
         query = []
         params = []
-        # формирование полей на изменение это можно в отдельную функцию завернуть
         for field_name in self.changed_cells.keys():
             if self.changed_cells[field_name] != str(self.old_data[field_name]):
                 query.append(f" `{field_name}` = %s")
@@ -136,6 +139,7 @@ class TableRecordAdder(TableInfoChanger):
             self.p_content_up()
             self.close()
 
+
 if __name__ == '__main__':
     db_wrapper.connect(host="localhost",
                        user="root",
@@ -148,7 +152,6 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     path = TableShower("`маршрут с названиям`", ["Номер маршрута"])
     drive = TableShower("`водитель`", ["Табельный номер"])
-    # path = TableShower("`маршрут с названиям`", ["Номер маршрута"])
     path.show()
     drive.show()
     sys.exit((app.exec_()))

@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout
 
-from TableShower import TableShower, TableRecordAdder, TableInfoChanger
+from TableShower import TableShower, TableRecordAdder
 
 
 class AutoRecordAdder(TableRecordAdder):

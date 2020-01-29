@@ -3,6 +3,9 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout
 from DbWrapper import db_wrapper
 from TableShower import TableShower
 
+# todo  Где-то должен отображаться состав маршрута
+#  также должно реализовано возможность изменения и добавления вместе с составом
+
 
 class PathUi(QWidget):
 

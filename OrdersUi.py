@@ -2,6 +2,8 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout
 
 from TableShower import TableShower
 
+# todo класс, на основе TableShower, добавление записей должно содержать поля с выпадающим списком
+
 
 class OrdersUi(QWidget):
     """Если здесь ничего нет можно убрать, оставить просто вызов TableShower"""

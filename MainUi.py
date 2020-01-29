@@ -13,7 +13,7 @@ class MainUi(QWidget):
 
         self.resize(500, 500)
 
-        # TODO часть виджетов -- просто одна кнопка, откывающая TableShower
+        # TODO часть виджетов -- просто одна кнопка, создающая TableShower, исправить
         self.drive_btn = QPushButton("Управление персоналом")
         self.auto_btn = QPushButton("Управление автопарком")
         self.orders_btn = QPushButton("Управление рейсами")

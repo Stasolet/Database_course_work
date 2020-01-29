@@ -1,12 +1,6 @@
 import mysql.connector
 from PyQt5.QtWidgets import QErrorMessage
 
-# conn = mysql.connector.connect(host="localhost",
-#                                user="root",
-#                                passwd="111222333",
-#                                database="пассажироперевозочная",
-#                                use_pure=True)  # для ошибки ssl
-
 
 class DbWrapper:
     """Убогая реализация шаблона одиночки для доступа к базе данных"""
@@ -19,7 +13,7 @@ class DbWrapper:
 
     @staticmethod
     def execute(operation: str, params=(), multi=False):  # Смотри что оборачиваешь, и его параметры
-        """Функция реализующая коннект по требованию и создание уникального курсора для каждого запроса"""
+        """Функция не реализующая коннект по требованию и создание уникального курсора для каждого запроса"""
         try:
             cur = DbWrapper.__conn.cursor()
             cur.execute(operation, params, multi)
