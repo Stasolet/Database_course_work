@@ -4,6 +4,14 @@ from PyQt5.QtWidgets import QScrollArea, QWidget, QHBoxLayout, QVBoxLayout,\
 
 from DbWrapper import db_wrapper
 
+def temporary_change_source_wrapper(func, src):
+    """Колдуй бабка, колдуй дед... декоратор для временной смены источника, если TableShower основан на view"""
+    def wrap(self):
+        q = self.source  # костыль связан с тем, что в качестве источника указан View, а не реальная таблица
+        self.source = src
+        func(self)
+        self.source = q
+    return wrap
 
 class TableShower(QWidget):
     def __init__(self, source: str, key_fields: list, parent=None):
@@ -68,7 +76,8 @@ class TableShower(QWidget):
 class TableInfoChanger(QWidget):
     """Класс для изменения записей в таблице, визуализированной TableShower
 
-    исходные значения полей берёт из родительского TableShower, после изменений вызывает обновление родителя"""
+    исходные значения полей берёт из родительского TableShower, после изменений вызывает обновление родителя
+    каждая ячейка представленна в виде Layout, информация о которых хранится в cell_index"""
 
     def __init__(self, header, info, parent: TableShower):
         super().__init__()
@@ -80,9 +89,10 @@ class TableInfoChanger(QWidget):
         self.p_content_up = parent.content_update
         self.changed_cells = {}
         self.old_data = dict(zip(header, info))
-        main_layout = QHBoxLayout()
+        self.main_layout = QVBoxLayout()
+        self.cell_index = {}
         for h, i in zip(header, info):
-            cell_layout = QVBoxLayout()
+            cell_layout = QHBoxLayout()
 
             cell_head = QLabel(str(h))
             cell_info = QLineEdit()
@@ -92,11 +102,12 @@ class TableInfoChanger(QWidget):
 
             cell_layout.addWidget(cell_head)
             cell_layout.addWidget(cell_info)
-            main_layout.addLayout(cell_layout)
+            self.cell_index[str(h)] = cell_layout
+            self.main_layout.addLayout(cell_layout)
         accept_btn = QPushButton("Подтвердить изменения")
         accept_btn.clicked.connect(self.push_changes)
-        main_layout.addWidget(accept_btn)
-        self.setLayout(main_layout)
+        self.main_layout.addWidget(accept_btn)
+        self.setLayout(self.main_layout)
 
     def push_changes(self):
         """отправляет изменения обратно в базу данных
