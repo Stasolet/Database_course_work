@@ -9,19 +9,18 @@ from TableShower import TableShower, TableRecordAdder, TableInfoChanger
 
 class PathRecordInfoChanger(TableInfoChanger):
     def __init__(self, header, info, parent: TableShower):
-        """виджеты ввода текста для станций заменяются на комбобоксы с возможностью поиска"""
+        """виджеты ввода текста для станций заменяются на комбобоксы с возможностью поиска
+
+            можно пробовать наследоваться от ViewShower с переопределение combo_update"""
         super().__init__(header, info, parent)
         self.source = "`маршрут`"
         self.combo_change_idx = {}
         for box_name in ["Станция отправления", "Станция прибытия"]:
             cell = self.cell_index[box_name]
-            old_line_edit = cell.itemAt(1).widget()
-            old_line_edit.setParent(None)
-            old_line_edit.deleteLater()
-            edit = QLineEdit()
+            edit = cell.itemAt(1).widget()
+            edit.disconnect()
             combo = QComboBox()
-            combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-            cell.addWidget(edit)
+            combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # это не работает todo исправить размер
             cell.addWidget(combo)
             edit.editingFinished.connect(lambda c=combo, t=edit.text: self.combo_update(c, t()))
             combo.activated[str].connect(lambda text, cell_name=box_name:
@@ -51,13 +50,11 @@ class PathRecordInfoChanger(TableInfoChanger):
                 c.addItem(station_info)
 
 
-
-
 class PathRecordAdder(PathRecordInfoChanger):
-    push_changes = temporary_change_source_wrapper(TableRecordAdder.push_changes, "`маршрут`")
 
     def __init__(self, header, parent: TableShower):
         super().__init__(header=header, info=[""] * len(header), parent=parent)
+
 
 class PathShower(TableShower):
     def __init__(self, parent=None):
@@ -73,13 +70,20 @@ class PathUi(QWidget):
 
         self.slave_widgets = []
         self.show_all_btn = QPushButton("Отобразить все маршруты")
-        self.get_path_btn = QPushButton("Проложить маршрут")
+        self.station_btn = QPushButton("Станции")  # todo здесь тоже надо прикрутить комбобоксов:( на 2 виджета
+        self.town_btn = QPushButton("Населённые пункты")  # можно сделать класс, который будет принимать массив для комбо
+        self.region_btn = QPushButton("Регионы")
 
         self.show_all_btn.clicked.connect(lambda: PathShower().show())
+        self.station_btn.clicked.connect(lambda: TableShower("`станция`", ["Код станции"]).show())
+        self.town_btn.clicked.connect(lambda: TableShower("`населённый пункт`", ["Код пункта"]).show())
+        self.region_btn.clicked.connect(lambda: TableShower("`регион`", ["Код региона"]).show())
 
         self.box = QVBoxLayout()
         self.box.addWidget(self.show_all_btn)
-        self.box.addWidget(self.get_path_btn)
+        self.box.addWidget(self.station_btn)
+        self.box.addWidget(self.town_btn)
+        self.box.addWidget(self.region_btn)
 
         self.setLayout(self.box)
 
