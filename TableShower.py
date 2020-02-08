@@ -4,14 +4,18 @@ from PyQt5.QtWidgets import QScrollArea, QWidget, QHBoxLayout, QVBoxLayout,\
 
 from DbWrapper import db_wrapper
 
-def temporary_change_source_wrapper(func, src):
-    """Колдуй бабка, колдуй дед... декоратор для временной смены источника, если TableShower основан на view"""
+
+def temporary_change_source_wrapper(func, data_source):
+    """Колдуй бабка, колдуй дед... декоратор для временной смены источника, если TableShower основан на view
+
+    просто, чтобы все офигели, какой я умный"""
     def wrap(self):
-        q = self.source  # костыль связан с тем, что в качестве источника указан View, а не реальная таблица
-        self.source = src
+        view_source = self.source  # костыль связан с тем, что в качестве источника указан View, а не реальная таблица
+        self.source = data_source
         func(self)
-        self.source = q
+        self.source = view_source
     return wrap
+
 
 class TableShower(QWidget):
     def __init__(self, source: str, key_fields: list, parent=None):

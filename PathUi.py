@@ -3,64 +3,44 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QCom
 from DbWrapper import db_wrapper
 from TableShower import TableShower, TableRecordAdder, TableInfoChanger
 
+from ViewShower import ViewShower, ViewInfoChanger, ViewRecordAdder
+
 # todo  Где-то должен отображаться состав маршрута
 #  также должно реализовано возможность изменения и добавления вместе с составом
+#  какая-то жопная это часть, но ладно
 
 
-class PathRecordInfoChanger(TableInfoChanger):
-    def __init__(self, header, info, parent: TableShower):
-        """виджеты ввода текста для станций заменяются на комбобоксы с возможностью поиска
-
-            можно пробовать наследоваться от ViewShower с переопределение combo_update"""
-        super().__init__(header, info, parent)
-        self.source = "`маршрут`"
-        self.combo_change_idx = {}
-        for box_name in ["Станция отправления", "Станция прибытия"]:
-            cell = self.cell_index[box_name]
-            edit = cell.itemAt(1).widget()
-            edit.disconnect()
-            combo = QComboBox()
-            combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # это не работает todo исправить размер
-            cell.addWidget(combo)
-            edit.editingFinished.connect(lambda c=combo, t=edit.text: self.combo_update(c, t()))
-            combo.activated[str].connect(lambda text, cell_name=box_name:
-                                         self.changed_cells.__setitem__(cell_name, self.combo_change_idx[text]))
-
-    def combo_update(self, c: QComboBox, text: str):
-        if text:
-            # я это ненавижу
-            station_list = self.db.execute(f"""SELECT 
-                                                станция.`Код станции`,
-                                                регион.`Наименование региона`,
-                                                `населённый пункт`.`Название пункта`,
-                                                станция.`Описание`,
-                                                станция.`Адрес`
-                                                FROM
-                                                    `населённый пункт`
-                                                    JOIN
-                                                        станция ON станция.`Код пункта` = `населённый пункт`.`Код пункта`
-                                                    JOIN
-                                                        регион ON регион.`Код региона` = `населённый пункт`.`Код региона`
-                                                WHERE
-                                                    `Название пункта` LIKE '%{text}%';""")
-            c.clear()
-            for i in station_list:
-                station_info = " ".join(i[1:])
-                self.combo_change_idx[station_info] = i[0]
-                c.addItem(station_info)
+class PathShower(ViewShower):
+    def __init__(self):
+        super().__init__("`маршрут с названиям`", ["Номер маршрута"], "`маршрут`")
+        q = {"Станция отправления": ("станция_view", "*", "`Населённый пункт`", "Станция отправления"),
+             "Станция прибытия": ("станция_view", "*", "`Населённый пункт`", "Станция прибытия")}
+        self.record_editor = type("PathEditor", (ViewInfoChanger,), {"что_то": q})
+        self.record_adder = type("PathEditor", (ViewRecordAdder,), {"что_то": q})
 
 
-class PathRecordAdder(PathRecordInfoChanger):
+class StationShower(ViewShower):
+    def __init__(self):
+        super().__init__("`станция_view`", ["Код станции"], "`станция`")
+        q = {"Населённый пункт":
+                  ("`населённый_пункт_view`",
+                   "`Код пункта`, `Название пункта`, `Наименование региона`",
+                   "`Название пункта`",
+                   "Код пункта")}
+        self.record_editor = type("StationEditor", (ViewInfoChanger,), {"что_то": q})
+        self.record_adder = type("StationAdder", (ViewRecordAdder,), {"что_то": q})
 
-    def __init__(self, header, parent: TableShower):
-        super().__init__(header=header, info=[""] * len(header), parent=parent)
 
-
-class PathShower(TableShower):
-    def __init__(self, parent=None):
-        super().__init__("`маршрут с названиям`", ["Номер маршрута"], parent)
-        self.record_editor = PathRecordInfoChanger
-        self.record_adder = PathRecordAdder
+class TownShower(ViewShower):
+    def __init__(self):
+        super().__init__("`населённый_пункт_view`", ["Код пункта"], "`населённый пункт`")
+        q = {"Наименование региона":
+                 ("регион",
+                  "`Код региона`, `Наименование региона`",
+                  "`Наименование региона`",
+                  "Код региона")}
+        self.record_editor = type("TownEditor", (ViewInfoChanger,), {"что_то": q})
+        self.record_adder = type("TownAdder", (ViewRecordAdder,), {"что_то": q})
 
 
 class PathUi(QWidget):
@@ -70,13 +50,13 @@ class PathUi(QWidget):
 
         self.slave_widgets = []
         self.show_all_btn = QPushButton("Отобразить все маршруты")
-        self.station_btn = QPushButton("Станции")  # todo здесь тоже надо прикрутить комбобоксов:( на 2 виджета
-        self.town_btn = QPushButton("Населённые пункты")  # можно сделать класс, который будет принимать массив для комбо
+        self.station_btn = QPushButton("Станции")
+        self.town_btn = QPushButton("Населённые пункты")
         self.region_btn = QPushButton("Регионы")
 
         self.show_all_btn.clicked.connect(lambda: PathShower().show())
-        self.station_btn.clicked.connect(lambda: TableShower("`станция`", ["Код станции"]).show())
-        self.town_btn.clicked.connect(lambda: TableShower("`населённый пункт`", ["Код пункта"]).show())
+        self.station_btn.clicked.connect(lambda: StationShower().show())
+        self.town_btn.clicked.connect(lambda: TownShower().show())
         self.region_btn.clicked.connect(lambda: TableShower("`регион`", ["Код региона"]).show())
 
         self.box = QVBoxLayout()
