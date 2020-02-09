@@ -9,14 +9,19 @@ from ViewShower import ViewShower, ViewInfoChanger, ViewRecordAdder
 #  также должно реализовано возможность изменения и добавления вместе с составом
 #  какая-то жопная это часть, но ладно
 
+# вывести состав маршрута
+# кнопка добавления пункта
+# учёт где начало где конец
+# чуть накрученный push
+
 
 class PathShower(ViewShower):
     def __init__(self):
         super().__init__("`маршрут с названиям`", ["Номер маршрута"], "`маршрут`")
         q = {"Станция отправления": ("станция_view", "*", "`Населённый пункт`", "Станция отправления"),
              "Станция прибытия": ("станция_view", "*", "`Населённый пункт`", "Станция прибытия")}
-        self.record_editor = type("PathEditor", (ViewInfoChanger,), {"что_то": q})
-        self.record_adder = type("PathEditor", (ViewRecordAdder,), {"что_то": q})
+        self.record_editor = type("PathEditor", (ViewInfoChanger,), {"combo_config": q})
+        self.record_adder = type("PathEditor", (ViewRecordAdder,), {"combo_config": q})
 
 
 class StationShower(ViewShower):
@@ -27,8 +32,8 @@ class StationShower(ViewShower):
                    "`Код пункта`, `Название пункта`, `Наименование региона`",
                    "`Название пункта`",
                    "Код пункта")}
-        self.record_editor = type("StationEditor", (ViewInfoChanger,), {"что_то": q})
-        self.record_adder = type("StationAdder", (ViewRecordAdder,), {"что_то": q})
+        self.record_editor = type("StationEditor", (ViewInfoChanger,), {"combo_config": q})
+        self.record_adder = type("StationAdder", (ViewRecordAdder,), {"combo_config": q})
 
 
 class TownShower(ViewShower):
@@ -39,8 +44,8 @@ class TownShower(ViewShower):
                   "`Код региона`, `Наименование региона`",
                   "`Наименование региона`",
                   "Код региона")}
-        self.record_editor = type("TownEditor", (ViewInfoChanger,), {"что_то": q})
-        self.record_adder = type("TownAdder", (ViewRecordAdder,), {"что_то": q})
+        self.record_editor = type("TownEditor", (ViewInfoChanger,), {"combo_config": q})
+        self.record_adder = type("TownAdder", (ViewRecordAdder,), {"combo_config": q})
 
 
 class PathUi(QWidget):
