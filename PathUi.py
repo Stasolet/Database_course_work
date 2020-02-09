@@ -17,7 +17,7 @@ from ViewShower import ViewShower, ViewInfoChanger, ViewRecordAdder
 
 class PathShower(ViewShower):
     def __init__(self):
-        super().__init__("`маршрут с названиям`", ["Номер маршрута"], "`маршрут`")
+        super().__init__("`маршрут_view`", ["Номер маршрута"], "`маршрут`")
         q = {"Станция отправления": ("станция_view", "*", "`Населённый пункт`", "Станция отправления"),
              "Станция прибытия": ("станция_view", "*", "`Населённый пункт`", "Станция прибытия")}
         self.record_editor = type("PathEditor", (ViewInfoChanger,), {"combo_config": q})
