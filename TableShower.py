@@ -85,7 +85,6 @@ class TableInfoChanger(QWidget):
 
     def __init__(self, header, info, parent: TableShower):
         super().__init__()
-
         parent.slave_widgets.append(self)
         self.source = parent.source
         self.db = parent.db
