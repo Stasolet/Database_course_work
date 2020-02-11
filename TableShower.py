@@ -5,18 +5,6 @@ from PyQt5.QtWidgets import QScrollArea, QWidget, QHBoxLayout, QVBoxLayout,\
 from DbWrapper import db_wrapper
 
 
-def temporary_change_source_wrapper(func, data_source):
-    """Колдуй бабка, колдуй дед... декоратор для временной смены источника, если TableShower основан на view
-
-    просто, чтобы все офигели, какой я умный"""
-    def wrap(self):
-        view_source = self.source  # костыль связан с тем, что в качестве источника указан View, а не реальная таблица
-        self.source = data_source
-        func(self)
-        self.source = view_source
-    return wrap
-
-
 class TableShower(QWidget):
     def __init__(self, source: str, key_fields: list, parent=None):
         super().__init__(parent=parent)
@@ -82,7 +70,6 @@ class TableInfoChanger(QWidget):
 
     исходные значения полей берёт из родительского TableShower, после изменений вызывает обновление родителя
     каждая ячейка представленна в виде Layout, информация о которых хранится в cell_index"""
-
     def __init__(self, header, info, parent: TableShower):
         super().__init__()
         parent.slave_widgets.append(self)
@@ -96,13 +83,11 @@ class TableInfoChanger(QWidget):
         self.cell_index = {}
         for h, i in zip(header, info):
             cell_layout = QHBoxLayout()
-
             cell_head = QLabel(str(h))
             cell_info = QLineEdit()
             cell_info.setText(str(i))
             cell_info.editingFinished.connect(lambda name=h, new_info_func=cell_info.text:
                                               self.changed_cells.__setitem__(name, new_info_func()))
-
             cell_layout.addWidget(cell_head)
             cell_layout.addWidget(cell_info)
             self.cell_index[str(h)] = cell_layout

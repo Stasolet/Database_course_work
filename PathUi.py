@@ -1,27 +1,10 @@
-from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QComboBox, QLineEdit, QSizePolicy
+from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout
 
 from DbWrapper import db_wrapper
-from TableShower import TableShower, TableRecordAdder, TableInfoChanger
+from PathShower import PathShower
+from TableShower import TableShower
 
 from ViewShower import ViewShower, ViewInfoChanger, ViewRecordAdder
-
-# todo  Где-то должен отображаться состав маршрута
-#  также должно реализовано возможность изменения и добавления вместе с составом
-#  какая-то жопная это часть, но ладно
-
-# вывести состав маршрута
-# кнопка добавления пункта
-# учёт где начало где конец
-# чуть накрученный push
-
-
-class PathShower(ViewShower):
-    def __init__(self):
-        super().__init__("`маршрут_view`", ["Номер маршрута"], "`маршрут`")
-        q = {"Станция отправления": ("станция_view", "*", "`Населённый пункт`", "Станция отправления"),
-             "Станция прибытия": ("станция_view", "*", "`Населённый пункт`", "Станция прибытия")}
-        self.record_editor = type("PathEditor", (ViewInfoChanger,), {"combo_config": q})
-        self.record_adder = type("PathEditor", (ViewRecordAdder,), {"combo_config": q})
 
 
 class StationShower(ViewShower):

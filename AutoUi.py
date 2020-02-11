@@ -17,7 +17,7 @@ class AutoRecordAdder(TableRecordAdder):
 
 class AutoTableShower(TableShower):
     def __init__(self, source: str, key_fields: list, parent=None):
-        super().__init__(self, source, key_fields, parent=parent)
+        super().__init__(source, key_fields, parent=parent)
         self.record_adder = AutoRecordAdder
 
 

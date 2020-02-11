@@ -1,6 +1,5 @@
 from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout
 
-from TableShower import TableShower
 from ViewShower import ViewShower, ViewRecordAdder, ViewInfoChanger
 
 
@@ -37,11 +36,7 @@ class OrdersUi(QWidget):
 
         self.box = QVBoxLayout()
         self.show_all_btn = QPushButton("Отобразить все рейсы")
-
         self.show_all_btn.clicked.connect(lambda: OrderShower().show())
-
         self.box.addWidget(self.show_all_btn)
-
         self.setLayout(self.box)
-
         self.show()

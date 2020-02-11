@@ -24,6 +24,12 @@ class DbWrapper:
             return None
 
     @staticmethod
+    def executemany(operation, seq_of_param):
+        cur = DbWrapper.__conn.cursor()
+        cur.executemany(operation, seq_of_param)
+        return cur
+
+    @staticmethod
     def commit():
         DbWrapper.__conn.commit()
 
