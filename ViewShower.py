@@ -11,8 +11,8 @@ class ViewShower(TableShower):
 
 
 class ViewInfoChanger(TableInfoChanger):  # походу не покатит, либо надо делать фабрику классов
-    """В что-то можно словарь положить ключ -- имя поля для приделывания комбобокса, а в значениях источник и имя в
-    таблице источнике кладётся при помощи наследования"""
+    """Виджет для визуализации отображений с возможностью редакирование содержимого,
+     с использованием выпадающих списков"""
 
     combo_config: dict  # словарь -- ключи названия столбцов отображения куда приделается комбобокс элементы кортежи,
     # нулевым элементом является таблица источник этого поля, первым строка в которой указаны столбцы данной таблицы,
@@ -37,7 +37,9 @@ class ViewInfoChanger(TableInfoChanger):  # походу не покатит, л
             edit = cell.itemAt(1).widget()
             edit.disconnect()
             combo = QComboBox()
-            combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # это не работает todo исправить размер
+            combo.addItem(edit.text())
+            edit.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+            combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # это почти работает todo исправить размер
             cell.addWidget(combo)
             edit.editingFinished.connect(lambda c_name=box_name, c=combo, t=edit.text:
                                          self.combo_update(c_name, c, t()))
@@ -60,6 +62,4 @@ class ViewRecordAdder(ViewInfoChanger):
 
     def __init__(self, header, parent: ViewShower):
         super().__init__(header=header, info=[""] * len(header), parent=parent)
-
-
 
