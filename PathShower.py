@@ -40,18 +40,20 @@ class PathEditor(ViewInfoChanger):
         add_btn = QPushButton("Добавить")
         down_btn = QPushButton("Вниз")
         up_btn = QPushButton("Вверх")
+        del_btn = QPushButton("Удалить")
 
         cmb = QComboBox()
         cmb.addItem(txt)
 
         edi.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
-        cmb.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # это почти работает todo исправить размер
+        cmb.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         up_btn.clicked.connect(lambda e, p=pos, c=cell: self.move_cell_up(c))
         down_btn.clicked.connect(lambda e, p=pos, c=cell: self.move_cell_down(c))
 
         add_btn.clicked.connect(lambda e, c=cell: self.add_cell(c.pos))
-        # todo кнопка удаления путевой точки
+        del_btn.clicked.connect(lambda e, c=cell: self.del_cell(c.pos))
+
         edi.editingFinished.connect(lambda c=cmb, t=edi.text:
                                     self.combo_update("Станция отправления", c, t()))  # le-kostyl
         cell.pos = pos
@@ -60,16 +62,25 @@ class PathEditor(ViewInfoChanger):
         cell.addWidget(add_btn)
         cell.addWidget(down_btn)
         cell.addWidget(up_btn)
+        cell.addWidget(del_btn)
         for i in range(pos + 1, self.way_layout.count()):
             cell_to_move = self.way_layout.itemAt(i)
             cell_to_move.pos += 1
         cell.pos += 1  # для вставки ниже активированной кнопки
 
         self.way_layout.insertLayout(cell.pos, cell)
-        for i in range(self.way_layout.count()):
-            ccc = self.way_layout.itemAt(i)
-            print(ccc.pos)
-        print("****")
+
+    def del_cell(self, pos):
+        cell: QVBoxLayout
+        cell = self.way_layout.takeAt(pos)
+        for i in range(cell.count()):
+            w = cell.takeAt(0).widget()
+            w.deleteLater()
+        cell.deleteLater()
+
+        for i in range(pos, self.way_layout.count()):
+            cell_to_move = self.way_layout.itemAt(i)
+            cell_to_move.pos -= 1
 
     def move_cell_up(self, cell):
         if cell.pos > 0:
