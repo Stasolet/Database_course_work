@@ -39,7 +39,7 @@ class ViewInfoChanger(TableInfoChanger):  # походу не покатит, л
             combo = QComboBox()
             combo.addItem(edit.text())
             edit.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
-            combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # это почти работает todo исправить размер
+            combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
             cell.addWidget(combo)
             edit.editingFinished.connect(lambda c_name=box_name, c=combo, t=edit.text:
                                          self.combo_update(c_name, c, t()))
