@@ -1,11 +1,9 @@
 from PyQt5.QtWidgets import QVBoxLayout, QPushButton, QHBoxLayout, QLineEdit, QComboBox, QSizePolicy
 
-from PathShower import path_combo_config
 from ViewShower import ViewInfoChanger, ViewShower
 
 
 class PathEditor(ViewInfoChanger):
-    combo_config = path_combo_config
 
     def __init__(self, header, info, parent: ViewShower):
         super().__init__(header, info, parent)

@@ -1,12 +1,10 @@
 from PyQt5.QtWidgets import QVBoxLayout, QPushButton
 
 from PathEditor import PathEditor
-from PathShower import path_combo_config
 from ViewShower import ViewRecordAdder, ViewShower
 
 
 class PathAdder(ViewRecordAdder):
-    combo_config = path_combo_config
     add_cell = PathEditor.add_cell
     del_cell = PathEditor.del_cell
     move_cell_up = PathEditor.move_cell_up

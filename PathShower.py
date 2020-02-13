@@ -12,5 +12,7 @@ class PathShower(ViewShower):
 
         self.record_editor = PathEditor
         self.record_adder = PathAdder
+        self.record_editor.combo_config = path_combo_config
+        self.record_adder.combo_config = path_combo_config
 
 
