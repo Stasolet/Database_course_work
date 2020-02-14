@@ -28,3 +28,4 @@ class PathAdder(ViewRecordAdder):
         super().push_changes()
         self.path_id = self.changed_cells["Номер маршрута"]
         self.push_point_changes()
+
