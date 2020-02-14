@@ -19,18 +19,19 @@ class AutoRecordAdder(TableRecordAdder):
 
     def __init__(self, header, parent: TableShower):
         """Преподготовленная форма, облегчающая добавление сразу нескольких авто"""
+        super().__init__(header=header, parent=parent)
 
         info = parent.db.execute(f"select * from {parent.source} order by `Дата покупки` desc limit 1")
         info = list(info.fetchall()[0])  # из курсора возрващаются tuple, имутабельный
         info[0] = ""  # Номер авто пользователь должен задать
         info[-1] = "0"  # у нового авто пробег будет равен нулю
         # да, при изменении конфигурации таблицы может отвалиться
-        super(TableRecordAdder, self).__init__(header=header, info=info, parent=parent)
-        # В данном месте вызывается конструктор родителя родителя -- TableInfoChanger,
-        # для того, чтобы передать ему заполнение ячеек
-        # todo такое говно, лучше вручную всё заполнить
-        self.changed_cells.update(zip(header, info))
-        self.old_data.update(zip(header, [""] * len(header)))
+        for cell_name, cell_pre_value in zip(header, info):
+            cell = self.cell_index[cell_name]
+            edit = cell.itemAt(1).widget()
+            edit.setText(str(cell_pre_value))
+            self.changed_cells[cell_name] = cell_pre_value
+
         self.combo_change_idx = {"Водитель": {}}
         self.auto_id = None
         self.slave_drivers_layout = QVBoxLayout()
@@ -50,9 +51,8 @@ class AutoRecordAdder(TableRecordAdder):
 
 
 class AutoTableShower(TableShower):
-    # todo отображение водителей, привязанных к автомобилю как у маршрутов работающее при добавлении автомобиля
-    def __init__(self, source: str, key_fields: list, parent=None):
-        super().__init__(source, key_fields, parent=parent)
+    def __init__(self):
+        super().__init__("`автомобиль`", ["Номер автомобиля"])
         self.record_adder = AutoRecordAdder
         self.record_editor = AutoEditor
         self.record_editor.combo_config = auto_combo_config
@@ -67,7 +67,7 @@ class AutoUi(QWidget):
         self.box = QVBoxLayout()
         self.show_all_btn = QPushButton("Отобразить весь автопарк")
 
-        self.show_all_btn.clicked.connect(lambda: AutoTableShower("`автомобиль`", ["Номер автомобиля"]).show())
+        self.show_all_btn.clicked.connect(lambda: AutoTableShower().show())
 
         self.box.addWidget(self.show_all_btn)
 
