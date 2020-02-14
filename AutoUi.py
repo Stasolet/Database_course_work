@@ -59,19 +59,9 @@ class AutoTableShower(TableShower):
         self.record_adder.combo_config = auto_combo_config
 
 
-class AutoUi(QWidget):
+class AutoUi(AutoTableShower):
 
     def __init__(self):
         super().__init__()
-
-        self.box = QVBoxLayout()
-        self.show_all_btn = QPushButton("Отобразить весь автопарк")
-
-        self.show_all_btn.clicked.connect(lambda: AutoTableShower().show())
-
-        self.box.addWidget(self.show_all_btn)
-
-        self.setLayout(self.box)
-
         self.show()
 
