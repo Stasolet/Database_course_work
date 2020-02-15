@@ -128,7 +128,7 @@ class TableShower(QWidget):
 
             elif f_conf["type"] == "string":
                 if f_conf["value"].text():
-                    q = f"`{f}` LIKE %{f_conf['value'].text()}%"
+                    q = f"`{f}` LIKE \"%{f_conf['value'].text()}%\""
 
             if q:
                 filter_query.append(q)
