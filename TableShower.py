@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QScrollArea, QWidget, QHBoxLayout, QVBoxLayout,\
-    QLabel, QLineEdit, QPushButton, QGridLayout, QSizePolicy
+    QLabel, QLineEdit, QPushButton, QGridLayout, QSizePolicy, QRadioButton, QButtonGroup
 
 
 from DbWrapper import db_wrapper
@@ -35,13 +35,111 @@ class TableShower(QWidget):
         self.footer_layout.addWidget(self.add_record_btn)
 
         self.setLayout(self.main_layout)
+        # filter setup
+        #
+        #
+        self.filter_layout = QVBoxLayout()
+        self.head_layout.addLayout(self.filter_layout)
+        self.filters = {}
+        cur = self.db.execute(f"desc {self.source}")
+        for col in cur:
+            t = col[1]  # col_type
+            f = {"type": None, "value": None}
+            if t.find("int") != -1 or t.find("float") != -1:
+                f["type"] = "number"
+            elif t.find("char") != -1:
+                f["type"] = "string"
+
+            self.filters[col[0]] = f  # col_name
+
+        for f in self.filters.keys():
+            f_conf = self.filters[f]
+            if f_conf["type"] in {"number", "string"}:
+                cell = QHBoxLayout()
+                cell_name = QLabel(str(f))
+                cell.addWidget(cell_name)
+                if f_conf["type"] == "number":
+                    less_lbl = QLabel("меньше")
+                    less_edt = QLineEdit()
+
+                    great_lbl = QLabel("больше")  # можно сделать фалжок на или и
+                    great_edt = QLineEdit()
+
+                    grp = QButtonGroup()
+                    and_radio = QRadioButton("И")
+                    and_radio.setChecked(True)
+                    or_radio = QRadioButton("ИЛИ")
+                    grp.addButton(and_radio, 0)
+                    grp.addButton(or_radio, 1)
+
+                    f_conf["value"] = (less_edt, great_edt, grp)
+
+                    cell.addWidget(less_lbl)
+                    cell.addWidget(less_edt)
+                    cell.addWidget(great_lbl)
+                    cell.addWidget(great_edt)
+                    cell.addWidget(and_radio)
+                    cell.addWidget(or_radio)
+                elif f_conf["type"] == "string":
+                    l1 = QLabel("содержит")
+                    edit = QLineEdit()
+
+                    f_conf["value"] = edit
+
+                    cell.addWidget(l1)
+                    cell.addWidget(edit)
+
+                self.head_layout.addLayout(cell)
+
+        refresh_btn = QPushButton("Обновить")
+        refresh_btn.clicked.connect(self.content_update)
+        self.head_layout.addWidget(refresh_btn)
+        # setup
+
         self.content()
         self.resize(1000, 100)  # потому что я так хочу иначе слишком узко получается some magic
         # я не знаю почему но при таких числах всё хорошо выглядит
 
     def content(self) -> None:
         """Отображение непосредственно данных"""
-        all_path = self.db.execute(f"SELECT * FROM {self.source}")
+        filter_query = []
+        for f in self.filters.keys():
+            f_conf = self.filters[f]
+            q = None
+            if f_conf["type"] == "number":
+                q = f"`{f}`"
+                values = f_conf["value"]
+
+                if values[0].text():
+
+                    if values[1].text():  # 1 1
+                        or_flag = values[2].checkedId()
+                        if not or_flag:
+                            q += f" BETWEEN {values[0].text()} AND {values[1].text()}"
+                        else:
+                            q += f" < {values[0].text()} OR `{f}` > {values[1].text()}"
+
+                    else:  # 1 0
+                        q += f" < {values[0].text()} "
+                elif values[1].text():  # 0 1
+                    q += f"> {values[1].text()}"
+                else:  # 0 0
+                    q = None
+
+            elif f_conf["type"] == "string":
+                if f_conf["value"].text():
+                    q = f"`{f}` LIKE %{f_conf['value'].text()}%"
+
+            if q:
+                filter_query.append(q)
+
+        query = f"SELECT * FROM {self.source}"
+
+        filter_query = " AND ".join(filter_query)
+        if filter_query:
+            query += " WHERE " + filter_query
+
+        all_path = self.db.execute(query)
         data = [all_path.column_names] + all_path.fetchall()  # если отделить заголовок сложно верстать
         width = len(data[0])
         for i in range(len(data)):
@@ -149,8 +247,6 @@ if __name__ == '__main__':
     from PyQt5.QtWidgets import QApplication
     import sys
     app = QApplication(sys.argv)
-    path = TableShower("`маршрут с названиям`", ["Номер маршрута"])
     drive = TableShower("`водитель`", ["Табельный номер"])
-    path.show()
     drive.show()
     sys.exit((app.exec_()))
