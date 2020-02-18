@@ -30,14 +30,22 @@ class TableShower(QWidget):
         self.main_layout.addLayout(self.head_layout)
         self.main_layout.addWidget(self.table)
         self.main_layout.addLayout(self.footer_layout)
+        self.setLayout(self.main_layout)
 
         self.add_record_btn = QPushButton("ДОБАВИТЬ")
         self.footer_layout.addWidget(self.add_record_btn)
 
-        self.setLayout(self.main_layout)
-        # filter setup
-        #
-        #
+        self.build_filter_ui()
+
+        refresh_btn = QPushButton("Обновить")
+        refresh_btn.clicked.connect(self.content_update)
+        self.head_layout.addWidget(refresh_btn)
+
+        self.content()
+        self.resize(1000, 100)  # потому что я так хочу иначе слишком узко получается some magic
+        # я не знаю почему но при таких числах всё хорошо выглядит
+
+    def build_filter_ui(self):
         self.filter_layout = QVBoxLayout()
         self.head_layout.addLayout(self.filter_layout)
         self.filters = {}
@@ -51,7 +59,6 @@ class TableShower(QWidget):
                 f["type"] = "string"
 
             self.filters[col[0]] = f  # col_name
-
         for f in self.filters.keys():
             f_conf = self.filters[f]
             if f_conf["type"] in {"number", "string"}:
@@ -59,10 +66,10 @@ class TableShower(QWidget):
                 cell_name = QLabel(str(f))
                 cell.addWidget(cell_name)
                 if f_conf["type"] == "number":
-                    less_lbl = QLabel("меньше")
+                    less_lbl = QLabel("больше")
                     less_edt = QLineEdit()
 
-                    great_lbl = QLabel("больше")  # можно сделать фалжок на или и
+                    great_lbl = QLabel("меньше")
                     great_edt = QLineEdit()
 
                     grp = QButtonGroup()
@@ -89,53 +96,13 @@ class TableShower(QWidget):
                     cell.addWidget(l1)
                     cell.addWidget(edit)
 
-                self.head_layout.addLayout(cell)
-
-        refresh_btn = QPushButton("Обновить")
-        refresh_btn.clicked.connect(self.content_update)
-        self.head_layout.addWidget(refresh_btn)
-        # setup
-
-        self.content()
-        self.resize(1000, 100)  # потому что я так хочу иначе слишком узко получается some magic
-        # я не знаю почему но при таких числах всё хорошо выглядит
+                self.filter_layout.addLayout(cell)
 
     def content(self) -> None:
         """Отображение непосредственно данных"""
-        filter_query = []
-        for f in self.filters.keys():
-            f_conf = self.filters[f]
-            q = None
-            if f_conf["type"] == "number":
-                q = f"`{f}`"
-                values = f_conf["value"]
-
-                if values[0].text():
-
-                    if values[1].text():  # 1 1
-                        or_flag = values[2].checkedId()
-                        if not or_flag:
-                            q += f" BETWEEN {values[0].text()} AND {values[1].text()}"
-                        else:
-                            q += f" < {values[0].text()} OR `{f}` > {values[1].text()}"
-
-                    else:  # 1 0
-                        q += f" < {values[0].text()} "
-                elif values[1].text():  # 0 1
-                    q += f"> {values[1].text()}"
-                else:  # 0 0
-                    q = None
-
-            elif f_conf["type"] == "string":
-                if f_conf["value"].text():
-                    q = f"`{f}` LIKE \"%{f_conf['value'].text()}%\""
-
-            if q:
-                filter_query.append(q)
-
         query = f"SELECT * FROM {self.source}"
 
-        filter_query = " AND ".join(filter_query)
+        filter_query = self.get_filter_query()
         if filter_query:
             query += " WHERE " + filter_query
 
@@ -153,6 +120,40 @@ class TableShower(QWidget):
                 self.content_layout.addWidget(btn, i, width)
 
         self.add_record_btn.clicked.connect(lambda state: self.record_adder(data[0], self).show())
+
+    def get_filter_query(self):
+        filter_query = []
+        for f in self.filters.keys():
+            f_conf = self.filters[f]
+            q = None
+            if f_conf["type"] == "number":
+                q = f"`{f}`"
+                values = f_conf["value"]
+
+                if values[0].text():
+
+                    if values[1].text():  # 1 1
+                        or_flag = values[2].checkedId()
+                        if not or_flag:
+                            q += f" BETWEEN {values[0].text()} AND {values[1].text()}"
+                        else:
+                            q += f" >= {values[0].text()} OR `{f}` <= {values[1].text()}"
+
+                    else:  # 1 0
+                        q += f" >= {values[0].text()} "
+                elif values[1].text():  # 0 1
+                    q += f"<= {values[1].text()}"
+                else:  # 0 0
+                    q = None
+
+            elif f_conf["type"] == "string":
+                if f_conf["value"].text():
+                    q = f"`{f}` LIKE \"%{f_conf['value'].text()}%\""
+
+            if q:
+                filter_query.append(q)
+        filter_query = " AND ".join(filter_query)
+        return filter_query
 
     def content_update(self) -> None:
         """Обновление данных при принятии изменений"""
