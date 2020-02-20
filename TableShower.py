@@ -7,7 +7,7 @@ from DbWrapper import db_wrapper
 
 class TableShower(QWidget):
     """класс визуализации таблицы из бд, с возможностью изменения и добавления данных в неё"""
-    def __init__(self, source: str, key_fields: list, editable=True, parent=None):
+    def __init__(self, source: str, key_fields: list = None, editable=True, parent=None):
         super().__init__(parent=parent)
         self.editable = editable
         self.slave_widgets = []
