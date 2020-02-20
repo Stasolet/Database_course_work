@@ -5,6 +5,27 @@ from PathShower import PathShower
 from TableShower import TableShower
 
 from ViewShower import ViewShower, ViewInfoChanger, ViewRecordAdder
+from ProcedureShower import ProcedureShower
+
+path_through_point_args = [("Станция",
+                            {"src": "`станция_view`",
+                             "comb_info": """CONCAT(`Населённый пункт`, ' ', `Адрес`, ' ', `Описание`)""",
+                             "substitution": "`Код станции`"
+                             })]
+
+path_between_points_args = [("Первая станция",
+           {"src": "`станция_view`",
+               "comb_info": """CONCAT(`Населённый пункт`, ' ', `Адрес`, ' ', `Описание`)""",
+               "substitution": "`Код станции`"
+            }
+           ),
+          ("Вторая станция",
+           {"src": "`станция_view`",
+               "comb_info": """CONCAT(`Населённый пункт`, ' ', `Адрес`, ' ', `Описание`)""",
+               "substitution": "`Код станции`"
+            }
+           )
+          ]
 
 
 class StationShower(ViewShower):
@@ -42,17 +63,26 @@ class PathUi(QWidget):
         self.town_btn = QPushButton("Населённые пункты")
         self.region_btn = QPushButton("Регионы")
 
+        self.way_through_station_btn = QPushButton("Маршруты через станцию")
+        self.way_between_stations_btn = QPushButton("Маршруты через станцию")
+
         self.show_all_btn.clicked.connect(lambda: PathShower().show())
         self.station_btn.clicked.connect(lambda: StationShower().show())
         self.town_btn.clicked.connect(lambda: TownShower().show())
         self.region_btn.clicked.connect(lambda: TableShower("`регион`", ["Код региона"]).show())
+
+        self.way_through_station_btn.clicked.connect(lambda: ProcedureShower("path_through_point",
+                                                                             path_through_point_args).show())
+        self.way_between_stations_btn.clicked.connect(lambda: ProcedureShower("path_between_point",
+                                                                              path_between_points_args).show())
 
         self.box = QVBoxLayout()
         self.box.addWidget(self.show_all_btn)
         self.box.addWidget(self.station_btn)
         self.box.addWidget(self.town_btn)
         self.box.addWidget(self.region_btn)
-
+        self.box.addWidget(self.way_through_station_btn)
+        self.box.addWidget(self.way_between_stations_btn)
         self.setLayout(self.box)
 
         self.show()
