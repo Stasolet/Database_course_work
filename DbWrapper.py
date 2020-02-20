@@ -24,6 +24,11 @@ class DbWrapper:
             return None
 
     @staticmethod
+    def callproc(procname: str, arg: tuple):
+        cur = DbWrapper.__conn.cursor()
+        cur.callproc(procname, arg)
+        return cur
+
     def executemany(operation, seq_of_param):
         cur = DbWrapper.__conn.cursor()
         cur.executemany(operation, seq_of_param)
