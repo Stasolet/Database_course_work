@@ -6,8 +6,10 @@ from DbWrapper import db_wrapper
 
 
 class TableShower(QWidget):
-    def __init__(self, source: str, key_fields: list, parent=None):
+    """класс визуализации таблицы из бд, с возможностью изменения и добавления данных в неё"""
+    def __init__(self, source: str, key_fields: list, editable=True, parent=None):
         super().__init__(parent=parent)
+        self.editable = editable
         self.slave_widgets = []
         self.source = source
         self.key_fields = key_fields
@@ -32,8 +34,9 @@ class TableShower(QWidget):
         self.main_layout.addLayout(self.footer_layout)
         self.setLayout(self.main_layout)
 
-        self.add_record_btn = QPushButton("ДОБАВИТЬ")
-        self.footer_layout.addWidget(self.add_record_btn)
+        if self.editable:
+            self.add_record_btn = QPushButton("ДОБАВИТЬ")
+            self.footer_layout.addWidget(self.add_record_btn)
 
         self.build_filter_ui()
 
@@ -108,18 +111,28 @@ class TableShower(QWidget):
 
         all_path = self.db.execute(query)
         data = [all_path.column_names] + all_path.fetchall()  # если отделить заголовок сложно верстать
-        width = len(data[0])
-        for i in range(len(data)):
-            for j in range(width):
+        rows = len(data)
+        cols = len(data[0])
+        for i in range(rows):
+            for j in range(cols):
                 lbl = QLabel(str(data[i][j]))
                 self.content_layout.addWidget(lbl, i, j)
 
-            if i:  # чтобы не было кнопки на заголовке
+        if self.editable:  # чтобы не было кнопки на заголовке
+            for i in range(1, rows):
                 btn = QPushButton("Изменить запись")
                 btn.clicked.connect(lambda state, num=i: self.record_editor(data[0], data[num], self).show())
-                self.content_layout.addWidget(btn, i, width)
+                self.content_layout.addWidget(btn, i, cols)
 
-        self.add_record_btn.clicked.connect(lambda state: self.record_adder(data[0], self).show())
+            self.add_record_btn.clicked.connect(lambda state: self.record_adder(data[0], self).show())
+
+    def content_update(self) -> None:
+        """Обновление данных при принятии изменений"""
+        for i in reversed(range(self.content_layout.count())):  # Скопипасченное шайтан колдунство для очистки
+            widget_to_remove = self.content_layout.itemAt(i).widget()
+            widget_to_remove.setParent(None)
+            widget_to_remove.deleteLater()
+        self.content()
 
     def get_filter_query(self):
         filter_query = []
@@ -155,13 +168,6 @@ class TableShower(QWidget):
         filter_query = " AND ".join(filter_query)
         return filter_query
 
-    def content_update(self) -> None:
-        """Обновление данных при принятии изменений"""
-        for i in reversed(range(self.content_layout.count())):  # Скопипасченное шайтан колдунство для очистки
-            widget_to_remove = self.content_layout.itemAt(i).widget()
-            widget_to_remove.setParent(None)
-            widget_to_remove.deleteLater()
-        self.content()
 
 
 class TableInfoChanger(QWidget):
