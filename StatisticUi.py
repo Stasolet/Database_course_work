@@ -29,12 +29,12 @@ class StatisticUi(QWidget):
         self.one_auto_stat = QPushButton("Статистика по одному автомобилям")
         self.one_drive_stat = QPushButton("Статистика по одному водителю")
 
-        self.full_stat.clicked.connect(lambda: self.add_slave(TableShower("`общая статистика по автомобилям`",
-                                                                          editable=False)))
-        self.full_auto_stat.clicked.connect(lambda: self.add_slave(TableShower("`общая статистика по водителям`",
-                                                                               editable=False)))
-        self.full_drivers_stat.clicked.connect(lambda: self.add_slave(TableShower("`общая статистика помесячно`",
-                                                                                  editable=False)))
+        self.full_stat.clicked.connect(lambda: self.add_slave(TableShower("`общая статистика помесячно`",
+                                                                          editable=False, deletable=False)))
+        self.full_auto_stat.clicked.connect(lambda: self.add_slave(TableShower("`общая статистика по автомобилям`",
+                                                                               editable=False, deletable=False)))
+        self.full_drivers_stat.clicked.connect(lambda: self.add_slave(TableShower("`общая статистика по водителям`",
+                                                                                  editable=False, deletable=False)))
         self.one_auto_stat.clicked.connect(lambda: self.add_slave(ProcedureShower("auto_statistic",
                                                                                   arg=auto_statistic_args)))
         self.one_drive_stat.clicked.connect(lambda: self.add_slave(ProcedureShower("driver_statistic",
