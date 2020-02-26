@@ -93,3 +93,4 @@ class AutoEditor(TableInfoChanger):
     def push_changes(self):
         self.push_point_changes()
         super().push_changes()
+

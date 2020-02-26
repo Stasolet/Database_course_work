@@ -58,9 +58,24 @@ class ViewInfoChanger(TableInfoChanger):
                 self.combo_change_idx[c_name][combo_text] = i[0]
                 c.addItem(combo_text)
 
+    def push_changes(self):
+        self.combo_pre_push()
+        super().push_changes()
+
+    def combo_pre_push(self):
+        for combo in self.combo_config.keys():
+            cmb_cell = self.cell_index[combo]
+            cmb = cmb_cell.itemAt(2).widget()
+            self.changed_cells[self.combo_config[combo][3]] = self.combo_change_idx[combo][cmb.currentText()]
+
 
 class ViewRecordAdder(ViewInfoChanger):
-    push_changes = TableRecordAdder.push_changes
+    combo_pre_push = ViewInfoChanger.combo_pre_push
+    adder_push = TableRecordAdder.push_changes
+
+    def push_changes(self):
+        self.combo_pre_push()
+        self.adder_push()
 
     def __init__(self, header, parent: ViewShower):
         super().__init__(header=header, info=[""] * len(header), parent=parent)
