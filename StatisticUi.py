@@ -6,7 +6,7 @@ from ProcedureShower import ProcedureShower
 driver_statistic_args = [("Водитель",
                           {"src": "водитель",
                               "comb_info": "CONCAT(`Фамилия`, ' ',`Имя`, ' ',`Отчество`)",
-                               "substitution": "`Табельный номер`"})]
+                              "substitution": "`Табельный номер`"})]
 
 auto_statistic_args = [("Автомобиль",
                         {"src": "автомобиль",

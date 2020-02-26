@@ -5,8 +5,8 @@ from TableShower import TableShower, TableRecordAdder, TableInfoChanger
 
 class ViewShower(TableShower):
     """Класс для визуализации View, с возможностью изменения исходной таблицы с использованием выпадающих списков"""
-    def __init__(self, view_source: str, key_field: list, data_source: str, parent=None):
-        super().__init__(view_source, key_field, parent)
+    def __init__(self, view_source: str, key_field: list, data_source: str, parent=None, **kwargs):
+        super().__init__(source=view_source, key_fields=key_field, parent=parent, **kwargs)
         self.data_source = data_source
 
 

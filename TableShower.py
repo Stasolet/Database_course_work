@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QScrollArea, QWidget, QHBoxLayout, QVBoxLayout,\
-    QLabel, QLineEdit, QPushButton, QGridLayout, QSizePolicy, QRadioButton, QButtonGroup
+    QLabel, QLineEdit, QPushButton, QGridLayout, QSizePolicy, QRadioButton, QButtonGroup, QMessageBox
 
 
 from DbWrapper import db_wrapper
@@ -7,9 +7,10 @@ from DbWrapper import db_wrapper
 
 class TableShower(QWidget):
     """класс визуализации таблицы из бд, с возможностью изменения и добавления данных в неё"""
-    def __init__(self, source: str, key_fields: list = None, editable=True, parent=None):
+    def __init__(self, source: str, key_fields: list = None, editable=True, deletable=True, parent=None):
         super().__init__(parent=parent)
         self.editable = editable
+        self.deletable = deletable
         self.slave_widgets = []
         self.source = source
         self.key_fields = key_fields
@@ -118,13 +119,20 @@ class TableShower(QWidget):
                 lbl = QLabel(str(data[i][j]))
                 self.content_layout.addWidget(lbl, i, j)
 
-        if self.editable:  # чтобы не было кнопки на заголовке
+        if self.editable:
             for i in range(1, rows):
                 btn = QPushButton("Изменить запись")
                 btn.clicked.connect(lambda state, num=i: self.record_editor(data[0], data[num], self).show())
                 self.content_layout.addWidget(btn, i, cols)
-
             self.add_record_btn.clicked.connect(lambda state: self.record_adder(data[0], self).show())
+            cols += 1
+
+        if self.deletable:
+            for i in range(1, rows):
+                btn = QPushButton("Удалить запись")
+                btn.clicked.connect(lambda state, num=i: self.del_record_quest(data[0], data[num]))
+                self.content_layout.addWidget(btn, i, cols)
+            cols += 1
 
     def content_update(self) -> None:
         """Обновление данных при принятии изменений"""
@@ -133,6 +141,26 @@ class TableShower(QWidget):
             widget_to_remove.setParent(None)
             widget_to_remove.deleteLater()
         self.content()
+
+    def del_record_quest(self, header, data):
+        qwe = set(self.key_fields)
+        i = 0
+        del_query = []
+        while qwe:
+            if header[i] in qwe:
+                del_query.append(f"`{header[i]}` = {data[i]}")
+                qwe.remove(header[i])
+            i += 1
+        del_query = ','.join(del_query)
+        del_d = QMessageBox()
+        del_d.setIcon(QMessageBox.Question)
+        del_d.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        del_d.setText(f"Удалить запись {del_query}")
+        dialog_res = del_d.exec()
+        if dialog_res == QMessageBox.Ok:
+            self.db.execute(f"delete from {self.source} where {del_query}")
+            self.db.commit()
+            self.content_update()
 
     def get_filter_query(self):
         filter_query = []
@@ -167,7 +195,6 @@ class TableShower(QWidget):
                 filter_query.append(q)
         filter_query = " AND ".join(filter_query)
         return filter_query
-
 
 
 class TableInfoChanger(QWidget):
@@ -254,6 +281,7 @@ if __name__ == '__main__':
     from PyQt5.QtWidgets import QApplication
     import sys
     app = QApplication(sys.argv)
-    drive = TableShower("`водитель`", ["Табельный номер"])
+    drive = TableShower("`водитель`", ["Табельный номер"], deletable=True)
     drive.show()
     sys.exit((app.exec_()))
+
