@@ -14,6 +14,7 @@ class TableShower(QWidget):
         self.slave_widgets = []
         self.source = source
         self.key_fields = key_fields
+        self.header = None
         self.db = db_wrapper
         self.record_editor = TableInfoChanger
         self.record_adder = TableRecordAdder
@@ -38,6 +39,7 @@ class TableShower(QWidget):
         if self.editable:
             self.add_record_btn = QPushButton("ДОБАВИТЬ")
             self.footer_layout.addWidget(self.add_record_btn)
+            self.add_record_btn.clicked.connect(lambda state: self.record_adder(self.header, self).show())
 
         self.build_filter_ui()
 
@@ -61,15 +63,17 @@ class TableShower(QWidget):
                 f["type"] = "number"
             elif t.find("char") != -1:
                 f["type"] = "string"
+            elif t.find("date") != -1 or t.find("time") != -1:
+                f["type"] = "datetime"
 
             self.filters[col[0]] = f  # col_name
         for f in self.filters.keys():
             f_conf = self.filters[f]
-            if f_conf["type"] in {"number", "string"}:
+            if f_conf["type"] in {"number", "string", "datetime"}:
                 cell = QHBoxLayout()
                 cell_name = QLabel(str(f))
                 cell.addWidget(cell_name)
-                if f_conf["type"] == "number":
+                if f_conf["type"] == "number" or f_conf["type"] == "datetime":
                     less_lbl = QLabel("больше")
                     less_edt = QLineEdit()
 
@@ -112,6 +116,7 @@ class TableShower(QWidget):
 
         all_path = self.db.execute(query)
         data = [all_path.column_names] + all_path.fetchall()  # если отделить заголовок сложно верстать
+        self.header = all_path.column_names
         rows = len(data)
         cols = len(data[0])
         for i in range(rows):
@@ -124,7 +129,6 @@ class TableShower(QWidget):
                 btn = QPushButton("Изменить запись")
                 btn.clicked.connect(lambda state, num=i: self.record_editor(data[0], data[num], self).show())
                 self.content_layout.addWidget(btn, i, cols)
-            self.add_record_btn.clicked.connect(lambda state: self.record_adder(data[0], self).show())
             cols += 1
 
         if self.deletable:
@@ -167,23 +171,29 @@ class TableShower(QWidget):
         for f in self.filters.keys():
             f_conf = self.filters[f]
             q = None
-            if f_conf["type"] == "number":
+            if f_conf["type"] == "number" or f_conf["type"] == "datetime":
                 q = f"`{f}`"
                 values = f_conf["value"]
+                grt_val = values[0].text()
+                les_val = values[1].text()
 
-                if values[0].text():
+                if f_conf["type"] == "datetime":
+                    grt_val = f'"{grt_val}"' if grt_val else grt_val
+                    les_val = f'"{les_val}"' if les_val else les_val
 
-                    if values[1].text():  # 1 1
+                if grt_val:
+
+                    if les_val:  # 1 1
                         or_flag = values[2].checkedId()
                         if not or_flag:
-                            q += f" BETWEEN {values[0].text()} AND {values[1].text()}"
+                            q += f" BETWEEN {grt_val} AND {les_val}"
                         else:
-                            q += f" >= {values[0].text()} OR `{f}` <= {values[1].text()}"
+                            q += f" >= {grt_val} OR `{f}` <= {les_val}"
 
                     else:  # 1 0
-                        q += f" >= {values[0].text()} "
-                elif values[1].text():  # 0 1
-                    q += f"<= {values[1].text()}"
+                        q += f" >= {grt_val} "
+                elif les_val:  # 0 1
+                    q += f"<= {les_val}"
                 else:  # 0 0
                     q = None
 
