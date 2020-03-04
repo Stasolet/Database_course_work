@@ -66,7 +66,8 @@ class ViewInfoChanger(TableInfoChanger):
         for combo in self.combo_config.keys():
             cmb_cell = self.cell_index[combo]
             cmb = cmb_cell.itemAt(2).widget()
-            self.changed_cells[self.combo_config[combo][3]] = self.combo_change_idx[combo][cmb.currentText()]
+            if self.combo_change_idx[combo]:
+                self.changed_cells[self.combo_config[combo][3]] = self.combo_change_idx[combo][cmb.currentText()]
 
 
 class ViewRecordAdder(ViewInfoChanger):
