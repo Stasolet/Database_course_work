@@ -1,5 +1,3 @@
-from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout
-
 from ViewShower import ViewShower, ViewRecordAdder, ViewInfoChanger
 
 
@@ -26,17 +24,12 @@ class OrderShower(ViewShower):
              }
         self.record_editor = type("OrderEditor", (ViewInfoChanger,), {"combo_config": q})
         self.record_adder = type("OrderAdder", (ViewRecordAdder,), {"combo_config": q})
+        self.resize(1500, 300)
 
 
-class OrdersUi(QWidget):
-    """Если здесь ничего нет можно убрать, оставить просто вызов ViewShower"""
+class OrdersUi(OrderShower):
 
     def __init__(self):
         super().__init__()
-
-        self.box = QVBoxLayout()
-        self.show_all_btn = QPushButton("Отобразить все рейсы")
-        self.show_all_btn.clicked.connect(lambda: OrderShower().show())
-        self.box.addWidget(self.show_all_btn)
-        self.setLayout(self.box)
         self.show()
+
