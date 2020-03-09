@@ -59,7 +59,7 @@ class TableShower(QWidget):
         for col in cur:
             t = col[1]  # col_type
             f = {"type": None, "value": None}
-            if t.find("int") != -1 or t.find("float") != -1:
+            if t.find("int") != -1 or t.find("float") != -1 or t == "double" or t.startswith("decimal"):
                 f["type"] = "number"
             elif t.find("char") != -1:
                 f["type"] = "string"
