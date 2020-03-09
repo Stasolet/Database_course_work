@@ -34,5 +34,4 @@ class MainUi(QWidget):
         self.bx.addWidget(self.statistic_btn)
 
         self.setLayout(self.bx)
-        self.show()
 
