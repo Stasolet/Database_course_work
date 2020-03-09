@@ -64,7 +64,7 @@ class PathUi(QWidget):
         self.region_btn = QPushButton("Регионы")
 
         self.way_through_station_btn = QPushButton("Маршруты через станцию")
-        self.way_between_stations_btn = QPushButton("Маршруты через станцию")
+        self.way_between_stations_btn = QPushButton("Маршруты проходящие на участке между двумя станцями")
 
         self.show_all_btn.clicked.connect(lambda: PathShower().show())
         self.station_btn.clicked.connect(lambda: StationShower().show())
