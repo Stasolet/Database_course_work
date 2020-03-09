@@ -5,7 +5,6 @@ from PyQt5.QtWidgets import QErrorMessage
 class DbWrapper:
     """Убогая реализация шаблона одиночки для доступа к базе данных"""
     __conn = None
-    last_error_widget = None  # надо, чтобы хоть где-то была ссылка на виджет, иначе его сборщик сожрёт
 
     @staticmethod
     def connect(**kwargs):
@@ -19,8 +18,9 @@ class DbWrapper:
             cur.execute(operation, params, multi)
             return cur
         except Exception as err:
-            DbWrapper.last_error_widget = QErrorMessage()
-            DbWrapper.last_error_widget.showMessage(str(err))
+            error_widget = QErrorMessage()
+            error_widget.showMessage(str(err))
+            error_widget.exec()
             return None
 
     @staticmethod
@@ -29,6 +29,7 @@ class DbWrapper:
         cur.callproc(procname, arg)
         return cur
 
+    @staticmethod
     def executemany(operation, seq_of_param):
         cur = DbWrapper.__conn.cursor()
         cur.executemany(operation, seq_of_param)
